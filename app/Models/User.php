@@ -5,8 +5,8 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -57,8 +57,9 @@ class User extends Authenticatable implements FilamentUser
 
     public function enrollments(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'course_enrollments')
-                    ->withTimestamps();
+        return $this
+            ->belongsToMany(Course::class, 'course_enrollments')
+            ->withTimestamps();
     }
 
     public function forums(): HasMany
@@ -83,19 +84,35 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(CourseEnrollment::class);
     }
-    
+
     /**
      * Get the enrolled courses for the user.
      */
     public function enrolledCourses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'course_enrollments')
-                    ->withPivot(['enrolled_at', 'progress', 'completed_at'])
-                    ->withTimestamps();
+        return $this
+            ->belongsToMany(Course::class, 'course_enrollments')
+            ->withPivot(['enrolled_at', 'progress', 'completed_at'])
+            ->withTimestamps();
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, '@yourdomain.com') && $this->hasVerifiedEmail();
+        // Allow access based on user role and active status
+        if (!$this->is_active) {
+            return false;
+        }
+
+        // Allow access to different panels based on role
+        switch ($panel->getId()) {
+            case 'kaprodi':
+                return $this->role === 'kaprodi' || $this->role === 'staff';
+            case 'dosen':
+                return $this->role === 'dosen';
+            case 'mahasiswa':
+                return $this->role === 'mahasiswa';
+            default:
+                return false;
+        }
     }
 }
