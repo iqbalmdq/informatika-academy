@@ -21,8 +21,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vendor: ['alpinejs'],
-                    filament: ['@filament/support']
+                    vendor: ['alpinejs']
                 }
             }
         },

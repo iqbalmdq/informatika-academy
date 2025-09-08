@@ -30,7 +30,7 @@
 }
 
 .livewire-form textarea {
-    @apply resize-vertical;
+    @apply resize: vertical;
 }
 
 /* Button Styling */
